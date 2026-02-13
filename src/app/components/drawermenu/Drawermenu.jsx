@@ -17,6 +17,9 @@ const Drawermenu = ({ open, setOpen }) => {
   const drawerRef = useRef(null);
   const [signupOpen, setSignupOpen] = useState(false);
   const [loginOpen, setLoginOpen] = useState(false);
+  
+  // Xətanı düzəltmək üçün əlavə olunan state
+  const [mounted, setMounted] = useState(false);
 
   const { user, isAuthenticated } = useSelector((state) => state.auth || {});
 
@@ -27,6 +30,9 @@ const Drawermenu = ({ open, setOpen }) => {
       : "url('https://toppng.com/uploads/preview/football-goal-futsal-mrm-kr-alkdm-11563128540f8f4xlrit9.png')";
 
   useEffect(() => {
+    // Komponent mount olduqda mounted-i true et
+    setMounted(true);
+
     const handleClickOutside = (event) => {
       if (signupOpen || loginOpen) return;
       if (drawerRef.current && !drawerRef.current.contains(event.target)) {
@@ -39,25 +45,23 @@ const Drawermenu = ({ open, setOpen }) => {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, [open, setOpen, signupOpen, loginOpen]);
 
-  // MODALLARI İDARƏ EDƏN FUNKSİYALAR
+  // Əgər komponent hələ brauzerdə tam yüklənməyibsə, heç nə render etmə (Hydration-u qoruyur)
+  if (!mounted) return null;
+
   const openLogin = () => {
-    setOpen(false); 
-    setTimeout(() => {
-      setSignupOpen(false);
-      setLoginOpen(true);
-    }, 300);
+    setSignupOpen(false);
+    setTimeout(() => setLoginOpen(true), 300);
   };
 
   const openSignup = () => {
-    setOpen(false); 
-    setTimeout(() => {
-      setLoginOpen(false);
-      setSignupOpen(true);
-    }, 300);
+    setLoginOpen(false);
+    setTimeout(() => setSignupOpen(true), 300);
   };
 
   return (
     <>
+      {open && <div className="fixed inset-0 bg-black/20 z-[90] backdrop-blur-sm transition-opacity" />}
+
       <div
         ref={drawerRef}
         className={`fixed top-1/2 right-0 z-[100] transform -translate-y-1/2 transition-all duration-500 ease-in-out ${
@@ -97,11 +101,11 @@ const Drawermenu = ({ open, setOpen }) => {
               </div>
               
               <Link href="/wishlist" onClick={() => setOpen(false)} className="flex items-center gap-4 text-xl text-gray-700 hover:text-black hover:translate-x-2 transition-all">
-                <HeartOutlined className="text-2xl" /> Wishlist
+                <HeartOutlined className="text-2xl text-red-400" /> Wishlist
               </Link>
               
               <Link href="/cart" onClick={() => setOpen(false)} className="flex items-center gap-4 text-xl text-gray-700 hover:text-black hover:translate-x-2 transition-all">
-                <ShoppingCartOutlined className="text-2xl" /> Shopping Cart
+                <ShoppingCartOutlined className="text-2xl text-blue-400" /> Shopping Cart
               </Link>
               
               <div className="mt-10 pt-6 border-t border-gray-100">
@@ -115,26 +119,24 @@ const Drawermenu = ({ open, setOpen }) => {
               </h2>
               
               <div className="space-y-6">
-                <div className="flex items-center gap-4 text-xl font-medium text-gray-300 cursor-not-allowed group relative">
+                <div className="flex items-center gap-4 text-xl font-medium text-gray-300 cursor-not-allowed">
                   <HeartOutlined className="text-2xl" /> Wishlist
                 </div>
-                <div className="flex items-center gap-4 text-xl font-medium text-gray-300 cursor-not-allowed group relative">
+                <div className="flex items-center gap-4 text-xl font-medium text-gray-300 cursor-not-allowed">
                   <ShoppingCartOutlined className="text-2xl" /> Shopping Cart
                 </div>
               </div>
               
               <div className="mt-8 flex flex-col gap-4">
-                {/* LOGIN BUTONU */}
                 <button
-                  onClick={openLogin}
+                  onClick={() => { setOpen(false); setTimeout(() => setLoginOpen(true), 300); }}
                   className="flex items-center justify-center gap-3 w-full py-4 bg-black text-white rounded-xl font-bold hover:bg-gray-800 transition-all shadow-lg active:scale-95"
                 >
                   <LoginOutlined /> Login
                 </button>
 
-                {/* SIGNUP BUTONU */}
                 <button
-                  onClick={openSignup}
+                  onClick={() => { setOpen(false); setTimeout(() => setSignupOpen(true), 300); }}
                   className="flex items-center justify-center gap-3 w-full py-4 border-2 border-black text-black rounded-xl font-bold hover:bg-black hover:text-white transition-all active:scale-95"
                 >
                   <UserAddOutlined /> Sign Up

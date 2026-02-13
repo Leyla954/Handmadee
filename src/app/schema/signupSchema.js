@@ -1,9 +1,25 @@
-const getRegisteredUser = () => {
-  if (typeof window !== "undefined") {
-    const data = localStorage.getItem("registered_user");
-    return data ? JSON.parse(data) : null;
+import axios from 'axios';
+
+const API_URL = "https://6988b1ca780e8375a688f34b.mockapi.io/users";
+
+// Təkrarçılığın qarşısını almaq üçün ümumi yoxlama funksiyası
+const checkAvailability = async (field, value, errorMsg) => {
+  if (!value || value.length < 3) return Promise.resolve();
+  try {
+    // MockAPI-da spesifik sahəyə görə axtarış
+    const res = await axios.get(`${API_URL}?${field}=${value}`);
+    
+    // API bəzən oxşar nəticələri də qaytarır, dəqiq yoxlama aparırıq
+    const exists = res.data.some(user => user[field] === value);
+    
+    if (exists) {
+      return Promise.reject(new Error(errorMsg));
+    }
+    return Promise.resolve();
+  } catch (error) {
+    // API xətası olarsa (məsələn 404), deməli istifadəçi tapılmadı, keçid veririk
+    return Promise.resolve();
   }
-  return null;
 };
 
 export const signupSchema = {
@@ -12,65 +28,47 @@ export const signupSchema = {
     placeholder: "e.g. dreams_user", 
     requiredMsg: "Username is required!",
     existsRule: {
-      validator: (_, value) => {
-        const user = getRegisteredUser();
-        if (user && value && user.nickname === value) {
-          return Promise.reject(new Error("This username is already taken!"));
-        }
-        return Promise.resolve();
-      }
+      validator: (_, value) => checkAvailability('nickname', value, "This username is already taken!")
     }
   },
-  firstName: { label: "First Name", placeholder: "Enter your first name", requiredMsg: "First name is required!" },
-  lastName: { label: "Last Name", placeholder: "Enter your last name", requiredMsg: "Last name is required!" },
+  firstName: { 
+    label: "First Name", 
+    placeholder: "Enter your first name", 
+    requiredMsg: "Required!" 
+  },
+  lastName: { 
+    label: "Last Name", 
+    placeholder: "Enter your last name", 
+    requiredMsg: "Required!" 
+  },
   email: { 
     label: "Email Address", 
     placeholder: "example@dreams.com", 
     requiredMsg: "Email is required!", 
-    typeMsg: "Please enter a valid email format!",
     existsRule: {
-      validator: (_, value) => {
-        const user = getRegisteredUser();
-        if (user && value && user.email === value) {
-          return Promise.reject(new Error("This email is already registered!"));
-        }
-        return Promise.resolve();
-      }
+      validator: (_, value) => checkAvailability('email', value, "Email already registered!")
     }
   },
   phone: { 
-    label: "Phone Number", 
-    placeholder: "Numbers only", 
-    requiredMsg: "Phone number is required!", 
-    patternMsg: "Please enter only digits!",
-    existsRule: {
-      validator: (_, value) => {
-        const user = getRegisteredUser();
-        if (user && value && user.phone === value) {
-          return Promise.reject(new Error("This phone number is already in use!"));
-        }
-        return Promise.resolve();
-      }
-    }
+    label: "Phone", 
+    placeholder: "Digits only", 
+    requiredMsg: "Required!" 
   },
   password: { 
     label: "Password", 
-    placeholder: "At least 6 chars, letters & numbers", 
-    requiredMsg: "Password is required!",
-    minMsg: "Password must be at least 6 characters!",
-    // YENİ: Hərf və rəqəm yoxlaması (Regex)
+    requiredMsg: "Required!",
     pattern: /^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d]{6,}$/,
-    patternMsg: "Password must contain both letters and numbers!"
+    patternMsg: "Minimum 6 characters, must contain letters and numbers!"
   },
   gender: { 
     label: "Gender", 
-    requiredMsg: "Please select your gender!",
-    options: { male: "Male", female: "Female" }
+    requiredMsg: "Required!", 
+    options: { male: "Male", female: "Female" } 
   },
   messages: {
     title: "Join Dreams",
     submit: "Complete Registration",
-    success: "Congratulations! Your registration is complete.",
+    success: "Success! Your account has been created.",
     alreadyHaveAccount: "Already have an account?",
     loginLink: "Login now"
   }

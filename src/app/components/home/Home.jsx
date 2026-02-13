@@ -2,19 +2,21 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import { FloatButton } from "antd"; 
-import { ArrowLeftOutlined } from "@ant-design/icons";
+import { ArrowLeftOutlined, ExperimentOutlined, FireOutlined } from "@ant-design/icons";
 import Drawermenu from "../drawermenu/Drawermenu";
 
 const Home = () => {
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [showBackTop, setShowBackTop] = useState(false);
 
-  // Menyunu beynəlxalq standartlara uyğunlaşdırdıq
-  const pages = [
-    { id: 1, title: "Shop", href: "/shop" },
-    { id: 2, title: "Collections", href: "/dressing" },
-    { id: 3, title: "About Us", href: "/about" },
-    { id: 4, title: "Contact", href: "/contact" },
+  // Sənin biznes planına uyğun qlobal AI bölmələri
+  const aiPages = [
+    { id: 1, title: "Business Card AI", href: "/design-center/business-card", desc: "Digital Identity", icon: "🗂️" },
+    { id: 2, title: "Logo Master AI", href: "/design-center/logo-maker", desc: "Brand Creator", icon: "🎨" },
+    { id: 3, title: "Interior Render", href: "/design-center/interior-architect", desc: "Dream Home AI", icon: "🏠" },
+    { id: 4, title: "Fashion Lab", href: "/design-center/fashion-studio", desc: "AI Wear Design", icon: "👕" },
+    { id: 5, title: "PDF Architect", href: "/design-center/pdf-pro", desc: "Document Expert", icon: "📄" },
+    { id: 6, title: "Social Media Kit", href: "/design-center/social-kit", desc: "Viral Content", icon: "📱" },
   ];
 
   useEffect(() => {
@@ -24,62 +26,84 @@ const Home = () => {
   }, []);
 
   return (
-    <main className="relative flex flex-col items-center justify-center min-h-screen bg-white p-6 overflow-x-hidden">
+    <main className="relative flex flex-col items-center min-h-screen bg-[#f8f9fa] p-6 overflow-x-hidden">
       
-      {/* Drawer Menu */}
       <Drawermenu open={drawerOpen} setOpen={setDrawerOpen} />
 
-      {/* Overlay: Drawer açılanda arxa fonu yumşaq qaraldır */}
+      {/* Overlay */}
       {drawerOpen && (
         <div 
-          className="fixed top-0 left-0 w-full h-full bg-black/30 z-[55] transition-opacity duration-500 backdrop-blur-sm" 
+          className="fixed top-0 left-0 w-full h-full bg-black/40 z-[55] transition-opacity duration-500 backdrop-blur-md" 
           onClick={() => setDrawerOpen(false)}
         />
       )}
 
-      {/* Floating Trigger Button */}
+      {/* Floating Menu Trigger */}
       {!drawerOpen && (
         <div className="fixed top-1/2 right-0 z-50 transform -translate-y-1/2">
           <button
             onClick={() => setDrawerOpen(true)}
-            className="bg-gradient-to-tr from-black to-gray-700 text-white px-5 py-4 rounded-l-full shadow-2xl flex items-center transition-all hover:pr-10 hover:scale-105 active:scale-95"
+            className="bg-black text-white px-6 py-5 rounded-l-full shadow-2xl flex items-center transition-all hover:pr-12 hover:bg-gray-800 group"
           >
-            <ArrowLeftOutlined className="text-2xl animate-pulse" />
+            <ArrowLeftOutlined className="text-2xl group-hover:-translate-x-1 transition-transform" />
           </button>
         </div>
       )}
 
-      {/* Visual Image Section */}
+      {/* Hero Section Background (Leyla və s. üçün vizual yer) */}
       <div
-        className="absolute top-0 left-0 h-full w-[45%] mt-[5%] md:mt-[10%] z-0 pointer-events-none transition-all duration-700"
+        className="absolute top-0 left-0 h-full w-[40%] mt-[5%] z-0 pointer-events-none transition-all duration-700 hidden lg:block"
         style={{
           backgroundImage: "url('https://img.freepik.com/premium-photo/png-cartoon-adult-black-woman_53876-924726.jpg')",
           backgroundSize: "contain",
           backgroundRepeat: "no-repeat",
-          backgroundPosition: "left top",
-          opacity: drawerOpen ? 0.1 : 1,
-          filter: drawerOpen ? "grayscale(100%)" : "none",
+          backgroundPosition: "left center",
+          opacity: drawerOpen ? 0.05 : 0.8,
         }}
       />
 
-      {/* Right Blank Space */}
-      <div
-        className="absolute top-0 right-0 h-full w-[35%] bg-white z-0 transition-opacity duration-500"
-        style={{ opacity: drawerOpen ? 0.2 : 1 }}
-      />
+      {/* Content Header */}
+      <div className="relative z-10 w-full max-w-7xl mt-12 md:mt-20 px-4 md:px-10">
+        <div className="flex flex-col items-start md:items-end mb-12">
+            <h1 className="text-4xl md:text-6xl font-black text-black mb-2 uppercase tracking-tighter">
+                Dreams <span className="text-gray-400">AI</span>
+            </h1>
+            <p className="text-gray-500 font-medium tracking-widest uppercase text-xs md:text-sm">
+                Global Creative Ecosystem <FireOutlined className="text-orange-500" />
+            </p>
+        </div>
 
-      {/* Menu Cards Section */}
-      <div className="relative z-10 flex flex-col items-end w-full pr-6 md:pr-28">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-8 w-full max-w-lg mt-10 md:mt-24">
-          {pages.map((page) => (
+        {/* AI Tools Grid */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 w-full lg:ml-auto lg:w-2/3">
+          {aiPages.map((page) => (
             <Link key={page.id} href={page.href}>
-              <div className="relative bg-gradient-to-br from-[#1a1a1a] to-[#434343] text-white p-12 md:p-16 rounded-3xl shadow-xl cursor-pointer transition-all duration-500 hover:-translate-y-2 hover:shadow-[0_20px_40px_rgba(0,0,0,0.3)] group overflow-hidden">
-                {/* Number Background */}
-                <span className="absolute top-2 left-4 text-6xl font-black text-white/10 group-hover:text-white/20 transition-all duration-500 group-hover:scale-150">
+              <div className="group relative bg-white border border-gray-100 p-8 rounded-[2rem] shadow-sm hover:shadow-2xl transition-all duration-500 hover:-translate-y-3 cursor-pointer overflow-hidden">
+                
+                {/* Hover-da görünən arxa fon parıltısı */}
+                <div className="absolute -inset-1 bg-gradient-to-r from-gray-100 to-white opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+
+                <div className="relative z-10">
+                    <div className="text-4xl mb-4 bg-gray-50 w-16 h-16 flex items-center justify-center rounded-2xl group-hover:scale-110 transition-transform duration-500">
+                        {page.icon}
+                    </div>
+                    
+                    <h2 className="text-xl font-bold text-gray-900 mb-1 group-hover:text-black transition-colors">
+                        {page.title}
+                    </h2>
+                    
+                    <p className="text-gray-400 text-sm font-medium mb-4 uppercase tracking-wider">
+                        {page.desc}
+                    </p>
+
+                    <div className="flex items-center text-xs font-bold text-black group-hover:gap-2 transition-all">
+                        EXPLORE AI <ArrowLeftOutlined className="rotate-180 ml-2" />
+                    </div>
+                </div>
+
+                {/* Arxa planda böyük nömrə */}
+                <span className="absolute bottom-[-10%] right-[-5%] text-9xl font-black text-gray-50 group-hover:text-gray-100 transition-colors duration-500 z-0 select-none">
                   {page.id}
                 </span>
-                <h2 className="text-2xl font-bold tracking-widest uppercase italic">{page.title}</h2>
-                <div className="w-0 group-hover:w-full h-1 bg-white/50 mt-2 transition-all duration-500" />
               </div>
             </Link>
           ))}
@@ -89,9 +113,9 @@ const Home = () => {
       {/* Back to Top */}
       {showBackTop && (
         <FloatButton.BackTop 
-          duration={600}
-          style={{ left: 30, bottom: 30 }} 
-          className="hover:scale-110 transition-transform"
+          duration={800}
+          style={{ right: 30, bottom: 30 }} 
+          className="bg-black text-white hover:bg-gray-800"
         />
       )}
     </main>

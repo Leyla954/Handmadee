@@ -1,16 +1,29 @@
 "use client";
-import { useSelector } from "react-redux";
-import { UserOutlined, MailOutlined, CrownOutlined, CloudOutlined, HeartOutlined } from "@ant-design/icons";
+import { useEffect } from "react";
+import { useSelector, useDispatch } from "react-redux";
+import { UserOutlined, MailOutlined, CrownOutlined, CloudOutlined, HeartOutlined, LoadingOutlined } from "@ant-design/icons";
 import Logout from "../../(auth)/logout/Logout";
+import { Spin } from "antd";
 
 const User = () => {
-  // Redux integration for user data
-  const { user, isAuthenticated } = useSelector((state) => state.auth);
+  const dispatch = useDispatch();
+  
+  // Redux-dan həm user məlumatlarını, həm də loading state-ini çəkirik
+  const { user, isAuthenticated, loading } = useSelector((state) => state.auth);
 
-  // If not logged in
+  // Əgər loading state-i varsa (məlumat API-dan hələ gəlməyibsə) spinner göstərək
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center min-h-[70vh]">
+        <Spin indicator={<LoadingOutlined style={{ fontSize: 48, color: '#000' }} spin />} />
+      </div>
+    );
+  }
+
+  // Giriş edilməyibsə göstərilən hissə
   if (!isAuthenticated || !user) {
     return (
-      <div className="flex items-center justify-center min-h-[60vh] p-4">
+      <div className="flex items-center justify-center min-h-[60vh] p-4 animate-in fade-in duration-700">
         <div className="text-center p-12 border-2 border-dashed border-gray-100 rounded-[3rem] bg-white/50 backdrop-blur-sm">
           <UserOutlined className="text-6xl text-gray-200 mb-6" />
           <h3 className="text-2xl font-bold text-gray-800 mb-2">Private Space</h3>
@@ -22,7 +35,7 @@ const User = () => {
     );
   }
 
-  // Gender-based avatar assignment
+  // API-dan gələn gender məlumatına görə avatar təyini
   const avatarUrl = user.gender === "female" 
     ? "https://cdn-icons-png.flaticon.com/512/6997/6997662.png" 
     : "https://cdn-icons-png.flaticon.com/512/4128/4128176.png";
@@ -39,7 +52,7 @@ const User = () => {
           <div className="relative mb-6">
             <div className="w-36 h-36 rounded-full border-[6px] border-white shadow-xl overflow-hidden bg-white">
               <img 
-                src={avatarUrl} 
+                src={user.avatar || avatarUrl} // Əgər API-da özəl avatar varsa onu işlət
                 alt="Profile" 
                 className="w-full h-full object-cover transition-transform hover:scale-110 duration-500"
               />
@@ -49,19 +62,19 @@ const User = () => {
             </div>
           </div>
 
-          {/* User Details */}
+          {/* User Details - API-dan gələn real datalar */}
           <h2 className="text-4xl font-black text-gray-800 mb-1 tracking-tight" style={{ fontFamily: "cursive" }}>
-            {user.nickname || "Dreamer"}
+            {user.nickname || user.firstName || "Dreamer"}
           </h2>
           
           <p className="text-gray-400 flex items-center gap-2 mb-8 font-medium">
             <MailOutlined className="text-purple-400" /> {user.email}
           </p>
 
-          {/* Stats Section */}
+          {/* Stats Section - Bunları da gələcəkdə API-dan gələn user.dreams.length kimi yaza bilərsən */}
           <div className="grid grid-cols-2 gap-6 w-full mb-10">
             <div className="bg-gray-50/50 p-5 rounded-[2rem] text-center border border-gray-100 hover:bg-white hover:shadow-md transition-all duration-300 group">
-              <CloudOutlined className="text-2xl text-blue-400 mb-2 group-hover:bounce" />
+              <CloudOutlined className="text-2xl text-blue-400 mb-2" />
               <span className="block text-2xl font-black text-gray-800">12</span>
               <span className="text-[10px] text-gray-400 uppercase font-bold tracking-[2px]">Dreams</span>
             </div>
@@ -73,7 +86,7 @@ const User = () => {
           </div>
 
           {/* Logout Component */}
-          <div className="w-full group">
+          <div className="w-full">
             <Logout />
           </div>
         </div>

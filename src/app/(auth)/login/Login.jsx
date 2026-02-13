@@ -3,15 +3,16 @@
 import { Modal, Form, Input, Button, App } from "antd"; 
 import { useState, useEffect } from "react";
 import { LockOutlined, MailOutlined, UnlockOutlined } from "@ant-design/icons";
-import { useDispatch } from "react-redux";
-import { login } from "@/app/redux/features/authSlice"; 
+import { useDispatch, useSelector } from "react-redux";
+import { loginUser } from "@/app/redux/features/authSlice"; 
 import { loginSchema } from "@/app/schema/loginSchema";
 
 const Login = ({ open, onClose, onSignUpClick }) => {
-  const [loading, setLoading] = useState(false);
   const [mounted, setMounted] = useState(false);
   const dispatch = useDispatch();
   const { message: messageApi, modal: modalApi } = App.useApp();
+  
+  const { loading } = useSelector((state) => state.auth);
 
   useEffect(() => {
     setMounted(true);
@@ -29,28 +30,17 @@ const Login = ({ open, onClose, onSignUpClick }) => {
     });
   };
 
-  const onFinish = (values) => {
-    setLoading(true);
-    if (typeof window !== "undefined") {
-      const registeredUser = JSON.parse(localStorage.getItem("registered_user"));
+  const onFinish = async (values) => {
+    // API-ya sorğu göndəririk
+    const resultAction = await dispatch(loginUser(values));
 
-      if (!registeredUser) {
-        messageApi.error(loginSchema.messages.userNotFound);
-        setLoading(false);
-        return;
-      }
-
-      if (values.email !== registeredUser.email || values.password !== registeredUser.password) {
-        messageApi.error(loginSchema.messages.invalid);
-        setLoading(false);
-        return;
-      }
-
-      dispatch(login(registeredUser));
-      messageApi.success(`${loginSchema.messages.welcome}, ${registeredUser.nickname || 'Dreamer'}!`);
-      
-      setLoading(false);
+    if (loginUser.fulfilled.match(resultAction)) {
+      const user = resultAction.payload;
+      messageApi.success(`${loginSchema.messages.welcome}, ${user.nickname || 'Dreamer'}!`);
       onClose?.(); 
+    } else {
+      // API-dan gələn real xəta mesajını göstəririk
+      messageApi.error(resultAction.payload || loginSchema.messages.invalid);
     }
   };
 
@@ -66,7 +56,6 @@ const Login = ({ open, onClose, onSignUpClick }) => {
       styles={{
         body: {
           padding: "40px",
-          // Şəkli və gradienti yenilədik
           backgroundImage: "linear-gradient(rgba(255,255,255,0.92), rgba(255,255,255,0.92)), url('https://d1idiaqkpcnv43.cloudfront.net/website1.0/images/sign-up.png')",
           backgroundSize: "cover",
           backgroundPosition: "center",
@@ -84,7 +73,12 @@ const Login = ({ open, onClose, onSignUpClick }) => {
           </p>
         </div>
         
-        <Form layout="vertical" onFinish={onFinish} requiredMark={false}>
+        <Form 
+          layout="vertical" 
+          onFinish={onFinish} 
+          requiredMark={false}
+          initialValues={{ email: '', password: '' }}
+        >
           <Form.Item
             label={loginSchema.email.label}
             name="email"
@@ -127,35 +121,31 @@ const Login = ({ open, onClose, onSignUpClick }) => {
             </span>
           </div>
 
-          <Form.Item>
-            <Button
-              htmlType="submit"
-              block
-              loading={loading}
-              style={{
-                background: "linear-gradient(90deg, #1a1a1a, #434343)",
-                color: "#fff",
-                height: "50px",
-                fontWeight: "bold",
-                borderRadius: "10px",
-                border: "none",
-                fontSize: "16px",
-                boxShadow: "0 4px 10px rgba(0,0,0,0.1)"
-              }}
-            >
-              {loginSchema.messages.submit}
-            </Button>
-          </Form.Item>
+          <Button
+            htmlType="submit"
+            block
+            loading={loading}
+            style={{
+              background: "linear-gradient(90deg, #1a1a1a, #434343)",
+              color: "#fff",
+              height: "50px",
+              fontWeight: "bold",
+              borderRadius: "10px",
+              border: "none",
+              fontSize: "16px",
+              boxShadow: "0 4px 10px rgba(0,0,0,0.1)"
+            }}
+          >
+            {loginSchema.messages.submit}
+          </Button>
         </Form>
 
         <div style={{ textAlign: "center", marginTop: "20px", color: "#666" }}>
           {loginSchema.messages.noAccount} {" "}
           <span 
             onClick={() => { 
-              onClose?.(); // Login bağlanır
-              setTimeout(() => {
-                onSignUpClick?.(); // 300ms sonra Signup açılır
-              }, 300); 
+              onClose?.();
+              setTimeout(() => onSignUpClick?.(), 300); 
             }} 
             style={{ color: "#000", cursor: "pointer", fontWeight: "700", textDecoration: "underline" }}
           >
